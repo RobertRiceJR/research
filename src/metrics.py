@@ -209,6 +209,13 @@ border-left:3px solid var(--accent);border-radius:8px;text-decoration:none;color
 .wl-title{font-size:.84rem;font-weight:600;line-height:1.32}
 .wl-meta{font-size:.7rem;color:var(--fg-subtle);margin-top:.3rem;font-family:ui-monospace,Consolas,monospace}
 .wl-empty{color:var(--fg-subtle);font-size:.82rem}
+.trend{display:grid;gap:.4rem}
+.tr-item{display:flex;gap:.7rem;align-items:baseline;padding:.5rem .7rem;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--fg)}
+.tr-item:hover{border-color:var(--accent)}
+.tr-rank{color:var(--accent);font-weight:700;font-family:ui-monospace,Consolas,monospace;min-width:1.4rem}
+.tr-name{font-weight:600}
+.tr-star{color:var(--warn);font-family:ui-monospace,Consolas,monospace;font-size:.82rem}
+.tr-desc{display:block;color:var(--fg-subtle);font-size:.82rem;margin-top:.15rem}
 @media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.right{position:static}}
 """
 
@@ -359,8 +366,24 @@ def _watchlist_html(items: list[dict] | None) -> str:
     return panel_head + "".join(rows) + "</div></aside>"
 
 
+def _trending_html(items: list[dict] | None) -> str:
+    if not items:
+        return ""
+    rows = []
+    for i, it in enumerate(items, 1):
+        lang = f' · {html.escape(it["lang"])}' if it.get("lang") else ""
+        rows.append(
+            f'<a class="tr-item" href="{html.escape(it["url"])}" target="_blank" rel="noopener">'
+            f'<span class="tr-rank">{i}</span><span>'
+            f'<span class="tr-name">{html.escape(it["name"])}</span> '
+            f'<span class="tr-star">★ {it["stars"]:,} {html.escape(it.get("stars_label", ""))}</span>{lang}'
+            f'<span class="tr-desc">{html.escape(it.get("desc", ""))}</span></span></a>'
+        )
+    return f'<h2>Top {len(items)} trending AI repos this week</h2><div class="trend">{"".join(rows)}</div>'
+
+
 def render_dashboard(records: list[dict] | None = None, topic_streams: dict | None = None,
-                     watchlist: list[dict] | None = None) -> Path:
+                     watchlist: list[dict] | None = None, trending: list[dict] | None = None) -> Path:
     runs = sorted(records if records is not None else load_all(),
                   key=lambda r: (r.get("date", ""), r.get("tag", ""), r.get("ts", "")))
     DASHBOARD.parent.mkdir(parents=True, exist_ok=True)
@@ -416,7 +439,14 @@ def render_dashboard(records: list[dict] | None = None, topic_streams: dict | No
         banner += (f'<div class="banner">⚠ Low <strong>faithfulness ({faith}/100)</strong> on the latest digest — '
                    f'possible unsupported or fabricated citations. Review before trusting.</div>')
 
+    if trending is None:
+        try:
+            import trending as _tr
+            trending = _tr.fetch_trending()
+        except Exception:  # noqa: BLE001
+            trending = []
     blocks = [
+        _trending_html(trending),
         f'<h2>Cumulative interactions</h2>{_area(cum, labels)}',
         f'<h2>Interactions per run</h2>{_bars(totals, labels, flags=[bool(r.get("missing_sources")) for r in runs])}',
     ]
