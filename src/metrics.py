@@ -366,6 +366,41 @@ def _watchlist_html(items: list[dict] | None) -> str:
     return panel_head + "".join(rows) + "</div></aside>"
 
 
+def _cfd(labels, series, w=900, h=320, pl=52, pb=80, pt=16) -> str:
+    """Stacked cumulative-flow area: one band per stream, cumulative over runs."""
+    names = list(series)
+    n = len(labels)
+    totals = [sum(series[s][i] for s in names) for i in range(n)] or [0]
+    maxv = max(totals + [1])
+    pw, ph = w - pl - 16, h - pb - pt
+    xs = [pl + pw / 2] if n == 1 else [pl + pw * i / (n - 1) for i in range(n)]
+    Y = lambda v: pt + ph * (1 - v / maxv)  # noqa: E731
+    out = [f'<line x1="{pl}" y1="{pt+ph}" x2="{w-16}" y2="{pt+ph}" class="axis"/>']
+    lower = [0.0] * n
+    for si, s in enumerate(names):
+        upper = [lower[i] + series[s][i] for i in range(n)]
+        up = " ".join(f"{xs[i]:.1f},{Y(upper[i]):.1f}" for i in range(n))
+        dn = " ".join(f"{xs[i]:.1f},{Y(lower[i]):.1f}" for i in range(n - 1, -1, -1))
+        c = _PALETTE[si % len(_PALETTE)]
+        cum = (upper[-1] - lower[-1]) if n else 0
+        out.append(f'<polygon points="{up} {dn}" fill="{c}" opacity="0.82" stroke="{c}" stroke-width="1">'
+                   f'<title>{html.escape(s)}: {cum:,.0f} cumulative</title></polygon>')
+        lower = upper
+    step = max(1, n // 8)
+    for i in range(0, n, step):
+        out.append(f'<text x="{xs[i]:.1f}" y="{pt+ph+15:.1f}" text-anchor="middle" class="axl">{html.escape(labels[i])}</text>')
+    lx, ly = pl, pt + ph + 42
+    for si, s in enumerate(names):
+        c = _PALETTE[si % len(_PALETTE)]
+        short = s if len(s) <= 28 else s[:26] + "…"
+        out.append(f'<rect x="{lx:.1f}" y="{ly-9:.1f}" width="11" height="11" rx="2" fill="{c}"/>')
+        out.append(f'<text x="{lx+16:.1f}" y="{ly:.1f}" class="axl">{html.escape(short)}</text>')
+        lx += 30 + len(short) * 6.6
+        if lx > w - 200:
+            lx, ly = pl, ly + 18
+    return f'<svg viewBox="0 0 {w} {h}" class="chart">{"".join(out)}</svg>'
+
+
 def _trending_html(items: list[dict] | None) -> str:
     if not items:
         return ""
@@ -445,9 +480,34 @@ def render_dashboard(records: list[dict] | None = None, topic_streams: dict | No
             trending = _tr.fetch_trending()
         except Exception:  # noqa: BLE001
             trending = []
+    # Cumulative Flow Diagram: cumulative interactions per stream over the last
+    # ~14 runs (2-week trend) — each stream is a stacked band.
+    cfd_runs = runs[-14:]
+    cfd_labels = [_label(r) for r in cfd_runs]
+    if topic_streams:
+        seen: list[str] = []
+        for r in cfd_runs:
+            for t in r.get("per_topic", {}):
+                s = topic_streams.get(t, "Other")
+                if s not in seen:
+                    seen.append(s)
+        cfd_series = {s: [] for s in seen}
+        tot = {s: 0 for s in seen}
+        for r in cfd_runs:
+            add = {s: 0 for s in seen}
+            for t, v in r.get("per_topic", {}).items():
+                s = topic_streams.get(t, "Other")
+                add[s] = add.get(s, 0) + v
+            for s in seen:
+                tot[s] += add.get(s, 0)
+                cfd_series[s].append(tot[s])
+        cfd_chart = _cfd(cfd_labels, cfd_series)
+    else:
+        cfd_chart = _area(cum, labels)
+
     blocks = [
         _trending_html(trending),
-        f'<h2>Cumulative interactions</h2>{_area(cum, labels)}',
+        f'<h2>Cumulative flow — interactions by stream (2-week trend)</h2>{cfd_chart}',
         f'<h2>Interactions per run</h2>{_bars(totals, labels, flags=[bool(r.get("missing_sources")) for r in runs])}',
     ]
 
@@ -464,15 +524,6 @@ def render_dashboard(records: list[dict] | None = None, topic_streams: dict | No
                 s = topic_streams.get(t, "Other")
                 sstats.setdefault(s, [0] * len(runs))[i] += v
         blocks.append(f'<h2>Stream trend (interactions / run)</h2>{_multiline(labels, sstats)}')
-    latest_topics = list(latest.get("per_topic", {}).keys())
-    if latest_topics:
-        tstats = {t: [0] * len(runs) for t in latest_topics}
-        for i, r in enumerate(runs):
-            for t, v in r.get("per_topic", {}).items():
-                if t in tstats:
-                    tstats[t][i] = v
-        blocks.append(f'<h2>Topic trend (latest-run topics)</h2>{_multiline(labels, tstats, h=340)}')
-
     # Category breakdowns (the bread and butter): latest run by topic + by stream.
     by_topic = sorted(latest.get("per_topic", {}).items(), key=lambda kv: kv[1], reverse=True)
     if by_topic:
