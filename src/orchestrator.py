@@ -426,6 +426,7 @@ def cmd_run(args) -> int:
     dash = metrics.render_dashboard(
         topic_streams=_topic_streams(),
         watchlist=metrics.extract_watchlist(rendered),
+        anthropic=metrics.extract_section(rendered),
     )
     print(f"KPI dashboard updated: {dash}")
     return 0
@@ -475,14 +476,16 @@ def cmd_kpi(args) -> int:
         print(f"Backfilled {n} digest(s) into the KPI store.")
     # Watch/read list comes from the latest run's digest file.
     rows = metrics.load_all()
-    watchlist = None
+    watchlist = anthropic = None
     if rows:
         latest = max(rows, key=lambda r: (r["date"], r.get("tag", ""), r.get("ts", "")))
         fn = f"{latest['date']}{('-' + latest['tag']) if latest.get('tag') else ''}.html"
         digest = DIGESTS / fn
         if digest.exists():
-            watchlist = metrics.extract_watchlist(digest.read_text(encoding="utf-8"))
-    dash = metrics.render_dashboard(topic_streams=_topic_streams(), watchlist=watchlist)
+            _dh = digest.read_text(encoding="utf-8")
+            watchlist = metrics.extract_watchlist(_dh)
+            anthropic = metrics.extract_section(_dh)
+    dash = metrics.render_dashboard(topic_streams=_topic_streams(), watchlist=watchlist, anthropic=anthropic)
     print(f"KPI store: {len(rows)} run(s). Dashboard: {dash}")
     return 0
 
@@ -548,14 +551,16 @@ def cmd_judge(args) -> int:
         sys.exit(f"No digest/raw data to judge for {date} (run it first).")
     metrics.attach_quality(date, args.tag or "", quality)
     rows = metrics.load_all()
-    watchlist = None
+    watchlist = anthropic = None
     if rows:
         latest = max(rows, key=lambda r: (r["date"], r.get("tag", ""), r.get("ts", "")))
         fn = f"{latest['date']}{('-' + latest['tag']) if latest.get('tag') else ''}.html"
         digest = DIGESTS / fn
         if digest.exists():
-            watchlist = metrics.extract_watchlist(digest.read_text(encoding="utf-8"))
-    dash = metrics.render_dashboard(topic_streams=_topic_streams(), watchlist=watchlist)
+            _dh = digest.read_text(encoding="utf-8")
+            watchlist = metrics.extract_watchlist(_dh)
+            anthropic = metrics.extract_section(_dh)
+    dash = metrics.render_dashboard(topic_streams=_topic_streams(), watchlist=watchlist, anthropic=anthropic)
     print(f"composite={quality.get('composite')}  rel={quality.get('relevance')}  "
           f"faith={quality.get('faithfulness')}  act={quality.get('actionability')}")
     if quality.get("issues"):

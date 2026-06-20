@@ -32,3 +32,10 @@ streams:
       - "LLM root cause analysis production"
       - "AI bug triage automation"
       - "AIOps on-call SRE copilot"
+
+  # Pinned to the top of the dashboard as the "Anthropic digest".
+  anthropic:
+    enabled: true
+    label: "Anthropic"
+    topics:
+      - "Anthropic Claude"

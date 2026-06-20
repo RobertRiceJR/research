@@ -216,6 +216,10 @@ border-left:3px solid var(--accent);border-radius:8px;text-decoration:none;color
 .tr-name{font-weight:600}
 .tr-star{color:var(--warn);font-family:ui-monospace,Consolas,monospace;font-size:.82rem}
 .tr-desc{display:block;color:var(--fg-subtle);font-size:.82rem;margin-top:.15rem}
+.anthro{background:var(--bg-elev);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.5rem}
+.anthro-h{font-size:1.1rem;font-weight:700;color:var(--accent-soft);margin-bottom:.2rem}
+.anthro-d{color:var(--fg-subtle);font-size:.8rem;font-weight:400;font-family:ui-monospace,Consolas,monospace}
+.anthro ul{margin:.3rem 0 0}
 @media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.right{position:static}}
 """
 
@@ -320,6 +324,14 @@ _WL_LI_RE = re.compile(r"<li>(.*?)</li>", re.DOTALL)
 _STRIP_TAGS = re.compile(r"<[^>]+>")
 
 
+def extract_section(digest_html: str, prefix: str = "Anthropic") -> str | None:
+    """Return the already-rendered <ul> of the digest section whose <h2> starts with prefix."""
+    for topic, ul in _WL_SECTION_RE.findall(digest_html):
+        if html.unescape(_STRIP_TAGS.sub("", topic)).strip().lower().startswith(prefix.lower()):
+            return ul
+    return None
+
+
 def extract_watchlist(digest_html: str) -> list[dict]:
     """Pull Act/Watch bullets (skip Ignore) from a rendered digest, prioritized."""
     items = []
@@ -401,6 +413,14 @@ def _cfd(labels, series, w=900, h=320, pl=52, pb=80, pt=16) -> str:
     return f'<svg viewBox="0 0 {w} {h}" class="chart">{"".join(out)}</svg>'
 
 
+def _anthropic_html(section_ul: str | None, date: str) -> str:
+    """Pinned top panel: the Anthropic topic's bullets, lifted from the digest verbatim."""
+    if not section_ul:
+        return ""
+    return (f'<div class="anthro"><div class="anthro-h">🟣 Anthropic digest '
+            f'<span class="anthro-d">{html.escape(date)}</span></div>{section_ul}</div>')
+
+
 def _trending_html(items: list[dict] | None) -> str:
     if not items:
         return ""
@@ -418,7 +438,8 @@ def _trending_html(items: list[dict] | None) -> str:
 
 
 def render_dashboard(records: list[dict] | None = None, topic_streams: dict | None = None,
-                     watchlist: list[dict] | None = None, trending: list[dict] | None = None) -> Path:
+                     watchlist: list[dict] | None = None, trending: list[dict] | None = None,
+                     anthropic: str | None = None) -> Path:
     runs = sorted(records if records is not None else load_all(),
                   key=lambda r: (r.get("date", ""), r.get("tag", ""), r.get("ts", "")))
     DASHBOARD.parent.mkdir(parents=True, exist_ok=True)
@@ -547,6 +568,7 @@ def render_dashboard(records: list[dict] | None = None, topic_streams: dict | No
 <h1>Research KPIs</h1>
 <div class="sub">{len(runs)} runs · {labels[0]} → {labels[-1]} · interactions = upvotes + points + reactions + comments</div>
 {banner}
+{_anthropic_html(anthropic, today)}
 <div class="layout">
 <main class="left">
 <div class="cards">{cards}</div>

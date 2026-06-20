@@ -1,3 +1,7 @@
+.\run doctor
+.\run run
+
+
 # last30days Dashboard (Claude) — self-contained keyless research loop
 
 A daily research loop that pulls what people are actually saying about your topics, synthesizes a
