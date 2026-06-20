@@ -22,8 +22,9 @@ engine/        vendored keyless engine (last30days.py + lib/) · MIT · VENDORED
 src/
   orchestrator.py   run / validate / doctor / kpi / rerender / judge
   render_digest.py  dark-mode digest (relevance sort, colored verdicts, per-bullet points)
-  metrics.py        KPI store + dashboard (trends, breakdowns, watch list, quality)
+  metrics.py        KPI store + dashboard (CFD, trends, breakdowns, watch list, quality)
   judge.py          3 cheap Haiku judges (Relevance / Faithfulness / Actionability)
+  trending.py       Top-10 trending AI GitHub repos this week (keyless)
 config/topics.yaml  research streams + topics
 digests/  raw/  metrics/  (generated; gitignored except metrics/kpi.jsonl)
 ```
@@ -79,10 +80,18 @@ Composite (faithfulness-weighted) lands on the dashboard as a **Digest quality**
 
 ## Dashboard KPIs
 
-Cumulative + per-run interactions, per-stream & per-topic trends and breakdowns, a sticky **Read / Watch
-list** (Act + Watch items, clickable), **source-health** flagging (an outage shows as ⚠, never a
-mysterious cliff), and **digest quality**. Interactions = upvotes + points + reactions + comments
-(YouTube views tracked separately as reach).
+Top to bottom:
+- **Top-10 trending AI repos this week** — keyless scrape of `github.com/trending?since=weekly`
+  (AI-filtered, star-velocity), refreshed on every dashboard rebuild.
+- **Cumulative Flow Diagram** — cumulative interactions per **stream** as stacked bands over the last
+  ~14 runs (2-week trend).
+- **Interactions per run** (source-outage runs flagged ⚠), **stream trend**, and per-topic / per-stream
+  **breakdowns** for the latest run.
+- A sticky **Read / Watch list** (Act + Watch items, clickable) on the right.
+- KPI cards: cumulative + latest interactions, **digest quality**, **source health** (an outage shows as
+  ⚠, never a mysterious cliff), citations, YouTube reach.
+
+Interactions = upvotes + points + reactions + comments (YouTube views tracked separately as reach).
 
 ## Scheduling
 
