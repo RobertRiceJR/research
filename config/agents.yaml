@@ -1,0 +1,26 @@
+# Agent due-diligence targets — the Claude agents you want a verdict on.
+# PLUG-AND-PLAY: add an `- name:` block below, then run `.\run agentdd "<name>"`
+# (or `.\run agentdd --all` to sweep every agent here). Zero code changes needed.
+#
+# Fed by the `claude_agents` discovery stream in topics.yaml: when the daily
+# digest surfaces an agent worth evaluating, add it here for a full brief.
+#
+# Schema: a top-level `agents:` list. Each block:
+#   name:          (required) the agent to research, as you'd name it
+#   aliases:       comma-separated alternate names               (optional)
+#   subreddits:    comma-separated subreddit hints, no r/ prefix (optional)
+#   github_repos:  comma-separated owner/repo hints              (optional)
+#
+# Hints are optional — they only sharpen keyless retrieval; the engine still
+# self-plans without them. They cannot unlock a non-keyless source.
+
+agents:
+  - name: "Claude Code code-review subagent"
+    aliases: "code-reviewer agent, /code-review, review subagent"
+    subreddits: "ClaudeAI, ClaudeCode"
+    github_repos: "anthropics/claude-code"
+
+  - name: "Claude Code security-review subagent"
+    aliases: "security-review agent, /security-review"
+    subreddits: "ClaudeAI, ClaudeCode"
+    github_repos: "anthropics/claude-code"

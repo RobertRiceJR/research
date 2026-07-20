@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Due Diligence — Data Avenues for a "Things to Do" Harvest Lane</title>
+<style>
+:root{--bg:#0e0e10;--bg-elev:#18181b;--bg-elev2:#202024;--fg:#fafafa;--fg-muted:#a1a1aa;
+--fg-subtle:#71717a;--accent:#a855f7;--accent-soft:#c4b5fd;--border:#27272a;
+--good:#34d399;--warn:#fbbf24;--bad:#fb7185;--info:#60a5fa;--teal:#2dd4bf;--max-w:1080px}
+@media (prefers-color-scheme:light){:root{--bg:#fff;--bg-elev:#fafafa;--bg-elev2:#f4f4f5;--fg:#18181b;
+--fg-muted:#52525b;--fg-subtle:#71717a;--accent:#7c3aed;--accent-soft:#6d28d9;--border:#e4e4e7;
+--good:#059669;--warn:#b45309;--bad:#dc2626;--info:#2563eb;--teal:#0d9488}}
+:root[data-theme="dark"]{--bg:#0e0e10;--bg-elev:#18181b;--bg-elev2:#202024;--fg:#fafafa;--fg-muted:#a1a1aa;
+--fg-subtle:#71717a;--accent:#a855f7;--accent-soft:#c4b5fd;--border:#27272a;
+--good:#34d399;--warn:#fbbf24;--bad:#fb7185;--info:#60a5fa;--teal:#2dd4bf}
+:root[data-theme="light"]{--bg:#fff;--bg-elev:#fafafa;--bg-elev2:#f4f4f5;--fg:#18181b;
+--fg-muted:#52525b;--fg-subtle:#71717a;--accent:#7c3aed;--accent-soft:#6d28d9;--border:#e4e4e7;
+--good:#059669;--warn:#b45309;--bad:#dc2626;--info:#2563eb;--teal:#0d9488}
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);
+font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{max-width:var(--max-w);margin:0 auto;padding:3rem 1.5rem 6rem}
+.mono{font-family:ui-monospace,'Cascadia Code',Consolas,monospace}
+code{font-family:ui-monospace,'Cascadia Code',Consolas,monospace;font-size:.86em;
+background:var(--bg-elev2);border:1px solid var(--border);border-radius:5px;padding:.08em .35em}
+.badge{display:inline-block;padding:.4rem .85rem;margin-bottom:.9rem;background:var(--bg-elev);
+border:1px solid var(--border);border-radius:999px;font-family:ui-monospace,'Cascadia Code',Consolas,monospace;
+font-size:.8rem;color:var(--fg-muted)}
+.badge .accent{color:var(--accent)}
+h1{font-size:1.9rem;line-height:1.2;margin:.3rem 0 .5rem}
+.meta{color:var(--fg-subtle);font-size:.85rem;margin-bottom:2rem;
+font-family:ui-monospace,'Cascadia Code',Consolas,monospace}
+h2{font-size:1.4rem;margin:3rem 0 .4rem;padding-top:1rem;border-top:1px solid var(--border)}
+h2 .num{color:var(--accent);font-family:ui-monospace,'Cascadia Code',Consolas,monospace;font-size:1rem;margin-right:.5rem}
+h3{font-size:1.05rem;margin:1.4rem 0 .3rem;color:var(--fg)}
+p{margin:.7rem 0}a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+a:hover{border-bottom-color:var(--accent)}strong{color:var(--fg);font-weight:650}
+em{color:var(--accent-soft);font-style:normal}
+.lede{font-size:1.05rem;color:var(--fg-muted)}
+.card{background:var(--bg-elev);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;margin:1rem 0}
+.card.rec{border-left:3px solid var(--accent)}
+.callout{background:var(--bg-elev);border:1px solid var(--border);border-left:3px solid var(--warn);
+border-radius:10px;padding:.9rem 1.15rem;margin:1.2rem 0;color:var(--fg-muted);font-size:.95rem}
+.callout strong{color:var(--fg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin:1.2rem 0}
+ul{padding-left:1.15rem;margin:.5rem 0}li{margin:.4rem 0}
+.tag{display:inline-block;padding:.12rem .5rem;border-radius:6px;font-size:.72rem;font-weight:700;
+font-family:ui-monospace,'Cascadia Code',Consolas,monospace;white-space:nowrap;vertical-align:middle}
+.v-act{color:#052e1a;background:var(--good)}
+.v-watch{color:#3a2503;background:var(--warn)}
+.v-avoid{color:#3a0510;background:var(--bad)}
+@media (prefers-color-scheme:dark){.v-act{color:#052e1a}.v-watch{color:#3a2503}.v-avoid{color:#3a0510}}
+.p-a{color:var(--accent);border:1px solid var(--accent)}
+.p-ap{color:var(--teal);border:1px solid var(--teal)}
+.p-b{color:var(--info);border:1px solid var(--info)}
+.p-k{color:var(--warn);border:1px solid var(--warn)}
+.p-x{color:var(--bad);border:1px solid var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;margin:1rem 0;font-size:.88rem;color:var(--fg-muted)}
+.legend .tag{margin-right:.35rem}
+.tablewrap{overflow-x:auto;margin:1.2rem 0;border:1px solid var(--border);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:820px;font-size:.86rem}
+th,td{text-align:left;padding:.6rem .7rem;border-bottom:1px solid var(--border);vertical-align:top}
+th{background:var(--bg-elev2);color:var(--fg-muted);font-weight:600;font-size:.76rem;text-transform:uppercase;
+letter-spacing:.03em;position:sticky;top:0}
+tbody tr:hover{background:var(--bg-elev)}
+td.avenue{font-weight:600;color:var(--fg);white-space:nowrap}
+tr.bucket td{background:var(--bg-elev);color:var(--accent-soft);font-weight:700;font-size:.8rem;
+text-transform:uppercase;letter-spacing:.04em}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.5rem 0}
+.pill{display:inline-block;padding:.35rem .7rem;border-radius:999px;font-size:.82rem;
+background:var(--bg-elev2);border:1px solid var(--border);color:var(--fg-muted)}
+.foot{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--border);color:var(--fg-subtle);font-size:.8rem}
+ol.src{font-size:.84rem;color:var(--fg-muted);padding-left:1.4rem}ol.src li{margin:.3rem 0}
+.small{font-size:.82rem;color:var(--fg-subtle)}
+pre.sketch{background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem;
+overflow-x:auto;font-family:ui-monospace,'Cascadia Code',Consolas,monospace;font-size:.82rem;color:var(--fg-muted);line-height:1.5}
+.phase{border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;margin:1rem 0;background:var(--bg-elev)}
+.phase .h{font-weight:700;color:var(--fg);font-size:1rem;margin-bottom:.2rem}
+.phase.now{border-left:3px solid var(--good)}.phase.opt{border-left:3px solid var(--info)}
+.phase.later{border-left:3px solid var(--warn)}.phase.no{border-left:3px solid var(--bad)}
+</style></head><body>
+
+<div class="badge">🧭 strategy brief · <span class="accent">things to do — data avenues</span></div>
+<h1>Where to harvest "things&nbsp;to&nbsp;do" data — a due-diligence report</h1>
+<div class="meta">2026-07-20 · executive due diligence · ~22 avenues rated · grounded in your keyless pipeline + live API/ToS checks</div>
+
+<p class="lede">You asked whether sources like <strong>TripAdvisor</strong> could feed a "things to do" harvest,
+the way Reddit and the food lane feed today. Short answer: <em>yes — but not by "adding TripAdvisor as a
+source."</em> This machine harvests differently than that mental model assumes, and once that's calibrated,
+the best avenues are surprisingly clear. Below: how the pipeline actually works, a rated scorecard of every
+candidate, deep dives on the winners, and a phased plan to wire it up.</p>
+
+<div class="card rec">
+<strong>Headline recommendation</strong>
+<ul>
+<li><span class="tag v-act">DO&nbsp;NOW</span> Ship a keyless <code>things-to-do</code> lane over <strong>Reddit + YouTube</strong> — a drop-in clone of your recipe lane. Zero new security surface. TripAdvisor/Yelp signal still reaches you because people <em>discuss and link them</em> there.</li>
+<li><span class="tag v-act">SLEEPER&nbsp;WIN</span> Add the <strong>open, keyless, structured</strong> sources — <strong>Wikivoyage, Wikipedia GeoSearch, OpenStreetMap Overpass</strong>. No API key, permissive licenses, authoritative "what exists / what to do." Most people miss these. <span class="small">(Recreation.gov/RIDB looked keyless but needs a free key — verified 2026-07-20; it moves to the keyed opt-in tier with NPS.)</span></li>
+<li><span class="tag v-watch">OPTIONAL</span> A WebSearch <code>things-to-do</code> skill (mirroring <code>tool-dd</code>) to layer cited facts from <strong>TripAdvisor pages, Atlas Obscura, tourism boards</strong> — no keys baked in.</li>
+<li><span class="tag v-watch">ONLY&nbsp;IF&nbsp;WORTH&nbsp;IT</span> Free-key side-lanes for <strong>NPS</strong> and <strong>Ticketmaster</strong> — but these break the keyless contract, so they're a deliberate opt-in, not a default.</li>
+<li><span class="tag v-avoid">AVOID</span> <strong>Google Places / Maps reviews</strong> and <strong>Yelp direct</strong> (their ToS forbids the persistent storage this tool does), <strong>Eventbrite discovery</strong> (dead since 2020), <strong>Meetup / Songkick / Bandsintown</strong> (paid/partner-gated), and <strong>scraping TripAdvisor</strong> (ToS + anti-bot).</li>
+</ul>
+</div>
+
+<h2><span class="num">01</span>How this pipeline actually harvests</h2>
+<p>Three grounded realities reshape the "add TripAdvisor" idea. Each links to the exact code.</p>
+
+<div class="grid">
+<div class="card">
+<h3>① It's keyless by contract</h3>
+<p>The engine only ever touches five sources — <strong>Reddit, Hacker News, Polymarket, GitHub, YouTube</strong>.
+Anything needing an API key or cookies (X, TikTok, and by extension TripAdvisor/Yelp/Google) is <em>deleted</em>
+from the vendored engine and triple-blocked: a <code>KEYLESS_SOURCES</code> allowlist, a scrubbed subprocess env
+(<code>BLOCKED_ENV</code>), and <code>EXCLUDE_SOURCES</code>
+(<a href="../src/orchestrator.py#L42-L58">orchestrator.py:42-58</a>).</p>
+</div>
+<div class="card">
+<h3>② "Lanes" are query framings, not sources</h3>
+<p>Your <code>recipe</code>, <code>agentdd</code>, and <code>dd</code> lanes all shell out to the <em>same</em>
+keyless engine via <code>run_engine</code>. Only the deterministic query plan and a <code>config/*.yaml</code>
+target list change (<a href="../src/recipes.py">recipes.py</a>,
+<a href="../src/agentdd.py">agentdd.py</a>). A "things to do" lane is the same move with a travel-shaped plan.</p>
+</div>
+<div class="card">
+<h3>③ There's already a safe path to "keyed" data</h3>
+<p>Your <code>skills/tool-dd</code> wrapper lets the <em>hosting Claude</em> layer WebSearch/WebFetch-grounded,
+cited facts on top of keyless evidence, merged via the <code>web_md</code> hook
+(<a href="../src/agentdd.py#L171-L181">agentdd.py:171-181</a>). That's exactly where TripAdvisor legitimately
+fits — read a public page, cite it, don't bake in a key.</p>
+</div>
+</div>
+
+<div class="callout">
+<strong>The load-bearing due-diligence insight:</strong> the loop <em>persists raw evidence to disk</em>
+(<code>raw/&lt;date&gt;/*.md</code>, saved in <a href="../src/orchestrator.py#L322">run_engine</a>). That single
+fact rules out Google Places and Yelp entirely — their terms forbid caching/storing content beyond narrow
+exceptions. So those aren't merely "needs a key"; they're <em>structurally incompatible</em> with how this tool
+works. Reddit/YouTube discussion <em>about</em> those places carries no such restriction.
+</div>
+
+<h2><span class="num">02</span>Access-path taxonomy</h2>
+<p>Every avenue is rated on which of five paths it fits — this is the column that actually decides "how would we harvest it."</p>
+<div class="legend">
+<span><span class="tag p-a">A</span> Keyless social lane — Reddit/YouTube, already in the engine (social proof)</span>
+<span><span class="tag p-ap">A+</span> Keyless open API — no key, add as a source or WebFetch (structured facts)</span>
+<span><span class="tag p-b">B</span> WebSearch/WebFetch enrichment — hosting Claude, cited, no key</span>
+<span><span class="tag p-k">K</span> Free-key side-lane — deliberate opt-in, breaks the keyless contract</span>
+<span><span class="tag p-x">✗</span> Avoid — ToS / paid / deprecated / storage-incompatible</span>
+</div>
+
+<h2><span class="num">03</span>Due-diligence scorecard</h2>
+<p class="small">Verdict: <span class="tag v-act">Act</span> build on it · <span class="tag v-watch">Watch</span> useful with caveats · <span class="tag v-avoid">Avoid</span> not worth it / not compatible. Each row's load-bearing fact links to its cited source (full list in §06).</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr>
+<th>Avenue</th><th>API &amp; key</th><th>ToS / legal</th><th>Data quality for "things to do"</th><th>Path</th><th>Verdict</th>
+</tr></thead>
+<tbody>
+
+<tr class="bucket"><td colspan="6">Travel &amp; tourism</td></tr>
+<tr>
+<td class="avenue">Reddit travel subs<br><span class="small mono">r/travel, r/solotravel, r/roadtrip, r/backpacking, r/Shoestring</span></td>
+<td>Already in the engine, keyless (<a href="../README.md#L14-L20">keyless contract</a>)</td>
+<td>Public JSON, no cookies — fine</td>
+<td><strong>High.</strong> Candid consensus, "is X worth it," hidden gems, itineraries</td>
+<td><span class="tag p-a">A</span></td>
+<td><span class="tag v-act">Act</span></td>
+</tr>
+<tr>
+<td class="avenue">YouTube<br><span class="small mono">"things to do in &lt;place&gt;", itineraries</span></td>
+<td>Keyless via <code>yt-dlp</code>, already active</td>
+<td>Public search — fine</td>
+<td><strong>High.</strong> Visual walk-throughs, day-plans, "top 10" lists</td>
+<td><span class="tag p-a">A</span></td>
+<td><span class="tag v-act">Act</span></td>
+</tr>
+<tr>
+<td class="avenue">Wikivoyage</td>
+<td>Open <a href="https://www.mediawiki.org/wiki/API:Geosearch">MediaWiki API</a>, <strong>no key</strong></td>
+<td><a href="https://en.wikivoyage.org/wiki/Wikivoyage:Copyleft">CC BY-SA 4.0</a> — attribute + share-alike</td>
+<td><strong>High.</strong> Structured <em>See / Do / Eat / Sleep</em> per destination; human-curated</td>
+<td><span class="tag p-ap">A+</span></td>
+<td><span class="tag v-act">Act</span></td>
+</tr>
+<tr>
+<td class="avenue">TripAdvisor <span class="small">(Content API)</span></td>
+<td>Key <em>+ credit card</em>; 5k free calls/mo; only <a href="https://developer-tripadvisor.com/content-api/">5 reviews per listing</a></td>
+<td>Scraping <a href="https://tripadvisor.mediaroom.com/us-terms-of-use">explicitly banned</a> (incl. AI/automated); attribution required</td>
+<td>Med. Ratings + thin reviews; strong name recognition</td>
+<td><span class="tag p-b">B</span> / <span class="tag p-a">A</span></td>
+<td><span class="tag v-watch">Watch</span></td>
+</tr>
+<tr>
+<td class="avenue">Atlas Obscura</td>
+<td>No official API; 3rd-party <a href="https://rss.app/rss-feed/atlas-obscura-rss-feed">RSS</a> / <a href="https://github.com/bartholomej/atlas-obscura-api">scrapers</a></td>
+<td>Scraping is gray; read public pages + attribute</td>
+<td><strong>High for offbeat.</strong> Unique/hidden places you won't find elsewhere</td>
+<td><span class="tag p-b">B</span></td>
+<td><span class="tag v-watch">Watch</span></td>
+</tr>
+<tr>
+<td class="avenue">Google Places / "Things to Do"</td>
+<td>Key + billing, pay-as-you-go</td>
+<td><a href="https://developers.google.com/maps/documentation/places/web-service/policies">No caching/storage</a> (only <code>place_id</code>) — <strong>incompatible with this tool's raw saves</strong></td>
+<td>Very high — but you can't keep it</td>
+<td><span class="tag p-x">✗</span></td>
+<td><span class="tag v-avoid">Avoid</span></td>
+</tr>
+<tr>
+<td class="avenue">Foursquare Places</td>
+<td>Key; free tier <a href="https://docs.foursquare.com/developer/reference/upcoming-changes">drops to 500 Pro calls/mo (Jun 2026)</a>; premium fields paid</td>
+<td>Display + storage restrictions</td>
+<td>High POI coverage; shrinking free access</td>
+<td><span class="tag p-x">✗</span></td>
+<td><span class="tag v-avoid">Avoid</span></td>
+</tr>
+
+<tr class="bucket"><td colspan="6">Local events &amp; nightlife</td></tr>
+<tr>
+<td class="avenue">Reddit city / event threads<br><span class="small mono">r/&lt;city&gt;, r/AskNYC, "this weekend"</span></td>
+<td>Keyless, already active</td>
+<td>Public — fine</td>
+<td><strong>High.</strong> Locals' picks, recurring events, "what's on"</td>
+<td><span class="tag p-a">A</span></td>
+<td><span class="tag v-act">Act</span></td>
+</tr>
+<tr>
+<td class="avenue">Ticketmaster Discovery API</td>
+<td><strong>Free key</strong>; <a href="https://developer.ticketmaster.com/products-and-docs/apis/getting-started/">5k/day, ~5 rps, 230k+ events</a></td>
+<td>Attribution; standard dev terms</td>
+<td><strong>High</strong> for ticketed concerts/sports/theater</td>
+<td><span class="tag p-k">K</span></td>
+<td><span class="tag v-watch">Watch</span></td>
+</tr>
+<tr>
+<td class="avenue">Eventbrite</td>
+<td>Public event <a href="https://github.com/Automattic/eventbrite-api/issues/83">search API shut down 2019–20</a>; org-scoped only now</td>
+<td>Discovery needs distribution-partner program</td>
+<td>N/A for discovery (can't search public events)</td>
+<td><span class="tag p-x">✗</span></td>
+<td><span class="tag v-avoid">Avoid</span></td>
+</tr>
+<tr>
+<td class="avenue">Meetup</td>
+<td>GraphQL only (since Feb 2025); OAuth; creating a consumer <a href="https://help.meetup.com/hc/en-us/articles/41453576628749-How-can-I-get-access-to-Meetup-s-API">needs paid Pro</a></td>
+<td>License terms; approval discretionary</td>
+<td>Med — groups/classes/meetups</td>
+<td><span class="tag p-x">✗</span></td>
+<td><span class="tag v-avoid">Avoid</span></td>
+</tr>
+<tr>
+<td class="avenue">Songkick / Bandsintown</td>
+<td><a href="https://www.songkick.com/developer">Partnership + license fee</a> / artist-oriented program</td>
+<td>Partner agreements required</td>
+<td>High for concerts — but gated</td>
+<td><span class="tag p-x">✗</span></td>
+<td><span class="tag v-avoid">Avoid</span></td>
+</tr>
+<tr>
+<td class="avenue">Local CVB / tourism-board "this weekend" pages + RSS</td>
+<td>Public pages / RSS, no key</td>
+<td>Usually reuse-friendly; attribute</td>
+<td>Med–high, very <em>local</em> and current</td>
+<td><span class="tag p-b">B</span></td>
+<td><span class="tag v-watch">Watch</span></td>
+</tr>
+
+<tr class="bucket"><td colspan="6">Outdoors &amp; recreation</td></tr>
+<tr>
+<td class="avenue">Recreation.gov (RIDB)</td>
+<td><strong>Free key required</strong> — <code>/facilities</code> returns HTTP 401 without one <span class="small">(verified 2026-07-20; earlier "no key" claim was wrong)</span>; <a href="https://www.recreation.gov/use-our-data">REST, 50/min</a></td>
+<td><a href="https://ridb.recreation.gov/docs">Free &amp; open</a>, reuse encouraged (US Gov)</td>
+<td><strong>High.</strong> Federal facilities, campsites, tours, permits, activities</td>
+<td><span class="tag p-k">K</span></td>
+<td><span class="tag v-watch">Watch</span></td>
+</tr>
+<tr>
+<td class="avenue">National Park Service (NPS) API</td>
+<td><strong>Free key</strong> (40-char); <a href="https://www.nps.gov/subjects/developer/get-started.htm">things-to-do, events, campgrounds, alerts</a></td>
+<td>US Gov data; attribution</td>
+<td><strong>High &amp; authoritative</strong> for parks — literally a "Things To Do" endpoint</td>
+<td><span class="tag p-k">K</span></td>
+<td><span class="tag v-act">Act</span></td>
+</tr>
+<tr>
+<td class="avenue">OpenStreetMap (Overpass)</td>
+<td>Open, <strong>no key</strong>, read-only; public instance <a href="https://operations.osmfoundation.org/policies/api/">rate-limited</a></td>
+<td>ODbL — attribute + share-alike (data)</td>
+<td><strong>High structured POIs</strong> via <code>tourism</code>/<code>historic</code> tags; "what exists near X"</td>
+<td><span class="tag p-ap">A+</span></td>
+<td><span class="tag v-act">Act</span></td>
+</tr>
+<tr>
+<td class="avenue">Wikipedia GeoSearch (GeoData)</td>
+<td>Open <a href="https://www.mediawiki.org/wiki/API:Geosearch">MediaWiki API</a>, no key</td>
+<td>CC BY-SA — attribute</td>
+<td>Med–high. Notable landmarks/POIs with coordinates near a point</td>
+<td><span class="tag p-ap">A+</span></td>
+<td><span class="tag v-act">Act</span></td>
+</tr>
+<tr>
+<td class="avenue">AllTrails</td>
+<td>No public API; scraping restricted</td>
+<td>ToS-restricted</td>
+<td>High for trails — but only reachable via discussion</td>
+<td><span class="tag p-a">A</span></td>
+<td><span class="tag v-watch">Watch</span></td>
+</tr>
+
+<tr class="bucket"><td colspan="6">Everyday local outings</td></tr>
+<tr>
+<td class="avenue">City subreddits<br><span class="small mono">r/&lt;yourcity&gt;, r/Ask&lt;city&gt;</span></td>
+<td>Keyless, already active</td>
+<td>Public — fine</td>
+<td><strong>High.</strong> Day trips, family outings, "hidden gem near me"</td>
+<td><span class="tag p-a">A</span></td>
+<td><span class="tag v-act">Act</span></td>
+</tr>
+<tr>
+<td class="avenue">Yelp <span class="small">(Fusion API)</span></td>
+<td>Free key, 5k/day; only <a href="https://docs.developer.yelp.com/docs/places-intro">3 review excerpts</a></td>
+<td><a href="https://terms.yelp.com/developers/api_terms/20250113_en_us/">Must delete all stored content on termination</a> — no persistent storage</td>
+<td>High local-biz — but storage rules clash with raw saves</td>
+<td><span class="tag p-b">B</span></td>
+<td><span class="tag v-avoid">Avoid</span></td>
+</tr>
+<tr>
+<td class="avenue">Google Maps reviews</td>
+<td>Via Places API (key + billing)</td>
+<td>No caching/storage — same block as Places</td>
+<td>Very high — but you can't keep it</td>
+<td><span class="tag p-x">✗</span></td>
+<td><span class="tag v-avoid">Avoid</span></td>
+</tr>
+<tr>
+<td class="avenue">Local blogs / "things to do near me" + RSS</td>
+<td>Public pages / RSS</td>
+<td>Attribute; per-site terms</td>
+<td>Med. Timely, hyper-local, uneven quality</td>
+<td><span class="tag p-b">B</span></td>
+<td><span class="tag v-watch">Watch</span></td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<p class="small">Not shown: <strong>Hacker News</strong> and <strong>Polymarket</strong> — both already in your engine, both essentially irrelevant for "things to do." The lane simply won't request them (like the recipe lane foregrounds Reddit + YouTube).</p>
+
+<h2><span class="num">04</span>Deep dives — the avenues to actually build on</h2>
+
+<div class="card rec">
+<h3><span class="tag p-a">A</span> Reddit + YouTube — the keyless spine <span class="tag v-act">Act</span></h3>
+<p>This is the honest analogue of "harvest TripAdvisor." You don't scrape review sites — you harvest the
+<em>conversation</em> where their signal already surfaces: "Is the Sky Deck worth it?", "best day trip from
+Denver," "skip the tourist traps, do this instead." It's the exact shape your recipe lane already nails, just
+re-framed. <strong>Sub-queries to bake into the plan:</strong> top experiences · hidden gems / local picks ·
+logistics &amp; tips (parking, timing, cost) · overrated / skip. Foreground Reddit + YouTube, same as
+<a href="../src/recipes.py#L73">recipes.py:73</a>.</p>
+</div>
+
+<div class="card rec">
+<h3><span class="tag p-ap">A+</span> The open-data trio — the sleeper win <span class="tag v-act">Act</span></h3>
+<p>Three sources give <strong>authoritative, structured "what exists / what to do"</strong> with <strong>no key</strong>
+and permissive licenses — the perfect complement to Reddit's opinions:</p>
+<ul>
+<li><strong>Wikivoyage</strong> — curated <em>See / Do / Eat</em> sections per destination. CC BY-SA 4.0 (attribute + keep derivatives share-alike). <span class="small">(Reliable in live testing.)</span></li>
+<li><strong>Wikipedia GeoSearch</strong> — notable landmarks with coordinates around a point; pairs naturally with OSM. <span class="small">(Reliable in live testing.)</span></li>
+<li><strong>OpenStreetMap Overpass</strong> — every museum, viewpoint, trailhead, landmark by tag, near any coordinate. Be a gentle client of the public instance — it frequently 504s under load, so treat it as best-effort.</li>
+</ul>
+<p class="small"><strong>Correction (verified 2026-07-20):</strong> Recreation.gov/RIDB was slated for this trio as "no key,"
+but its <code>/facilities</code> endpoint returns HTTP 401 without a free key — so it is <em>not</em> keyless. It
+moves to the keyed opt-in tier alongside NPS (build only if you want it).</p>
+<p class="small">Wiring note: these are structured JSON, not "30-day social chatter," so they fit best as either a
+WebFetch step inside the lane's synthesis or a small dedicated keyless fetcher — not as engine <code>--search</code>
+sources (the engine expects social/web ranking). Mind the <strong>share-alike</strong> obligations on Wikivoyage/OSM
+if you ever redistribute derived text/data.</p>
+</div>
+
+<div class="card">
+<h3><span class="tag p-b">B</span> WebSearch enrichment — where TripAdvisor legitimately fits <span class="tag v-watch">Watch</span></h3>
+<p>Your <code>tool-dd</code> skill already proves the pattern: run <code>--engine-only</code> for raw keyless
+evidence, then let the hosting Claude add <strong>cited</strong> facts via WebSearch/WebFetch, merged through the
+<code>web_md</code> hook. For "things to do," that skill can pull a TripAdvisor listing's top-rated attractions,
+an Atlas Obscura oddity, or a tourism board's weekend line-up — <em>reading public pages and citing them</em>,
+never baking in a key and never bulk-scraping. This respects TripAdvisor's attribution and stays clear of its
+anti-automation terms.</p>
+</div>
+
+<div class="card">
+<h3><span class="tag p-k">K</span> Free-key side-lanes — NPS &amp; Ticketmaster <span class="tag v-watch">Watch</span></h3>
+<p>The two <em>best</em> keyed sources are genuinely tempting: <strong>NPS</strong> has a literal "Things To Do"
+endpoint, and <strong>Ticketmaster Discovery</strong> covers 230k+ ticketed events on a free key. But a key —
+even a free one — <strong>breaks the keyless contract</strong> that's the spine of this repo's security model.
+If you want them, isolate them: a separate module with its own explicit env var, never folded into
+<code>run_engine</code> or the scrubbed engine env. Treat it as a conscious decision, documented, not a quiet
+default. Do <em>not</em> add their keys to the engine's environment.</p>
+</div>
+
+<h2><span class="num">05</span>Rollout blueprint</h2>
+<p>Mirrors patterns already in the repo, so it drops in. <em>Nothing here is built yet — this is the plan.</em></p>
+
+<div class="phase now">
+<div class="h">Phase 1 · Keyless <code>things-to-do</code> lane &nbsp;<span class="tag v-act">do now</span></div>
+<p>A near-exact clone of the recipe lane — the cheapest, safest expansion.</p>
+<ul>
+<li><code>config/todo.yaml</code> — target list, same flat schema as
+<a href="../config/recipes.yaml">recipes.yaml</a>: <code>name</code> (place/activity) + optional
+<code>location</code>, <code>category</code>, <code>subreddits</code> hints.</li>
+<li><code>src/todo.py</code> — clone of <a href="../src/recipes.py">recipes.py</a>: <code>load_todo()</code>,
+a deterministic <code>todo_plan()</code> (sub-queries: top experiences / hidden gems / logistics &amp; tips /
+overrated-or-skip), <code>research_todo()</code> via <code>orch.run_engine</code>, and a 3-section synthesis.</li>
+<li><code>cmd_todo</code> + argparse wiring in <a href="../src/orchestrator.py#L675-L720">orchestrator.py</a>,
+mirroring <code>cmd_recipe</code>. Reuse <code>render_brief</code>, <code>points_index</code>,
+<code>run_engine</code> unchanged. Add a <code>run todo "&lt;place&gt;"</code> / <code>--all</code> surface.</li>
+</ul>
+<pre class="sketch"># config/todo.yaml
+todo:
+  - name: "Chicago Riverwalk"
+    location: "Chicago, IL"
+    category: "Landmark / stroll"
+    subreddits: "chicago, travel, Chicagoland"
+  - name: "Great Sand Dunes National Park"
+    location: "Colorado"
+    category: "Outdoors"
+    subreddits: "ColoradoSprings, NationalPark, camping"
+
+# .\run todo "Chicago Riverwalk"   ->  briefs/chicago-riverwalk-2026-07-20.html
+# .\run todo --all                 ->  every place in config/todo.yaml</pre>
+</div>
+
+<div class="phase opt">
+<div class="h">Phase 2 · Optional <code>things-to-do</code> WebSearch skill &nbsp;<span class="tag v-watch">optional</span></div>
+<p>Mirror <a href="../skills/tool-dd/SKILL.md">skills/tool-dd</a>: the lane's <code>--engine-only</code> flag emits
+raw keyless evidence; the skill layers WebSearch/WebFetch facts (TripAdvisor pages, Atlas Obscura, tourism-board
+line-ups) merged via the existing <code>web_md</code> path — cited, attribution-respecting, no keys. Also the
+natural home for the <span class="tag p-ap">A+</span> open-data trio (Wikivoyage/Wikipedia GeoSearch/OSM) as
+WebFetch calls.</p>
+</div>
+
+<div class="phase later">
+<div class="h">Phase 3 · Free-key side-lanes (NPS, Ticketmaster) &nbsp;<span class="tag v-watch">only if warranted</span></div>
+<p>Deliberate opt-in that <strong>breaks the keyless contract</strong>. Build it isolated: a standalone module
+(e.g. <code>src/events_keyed.py</code>) reading its own <code>NPS_API_KEY</code> / <code>TM_API_KEY</code> env
+var, never touching <code>engine_env()</code> or <code>run_engine</code>. Document it as a separate, keyed
+capability in the README's security model — a decision, not a default.</p>
+</div>
+
+<div class="phase no">
+<div class="h">Do not build &nbsp;<span class="tag v-avoid">avoid</span></div>
+<p>Google Places / Maps reviews and Yelp direct (storage ToS vs. your raw saves), Eventbrite discovery
+(deprecated), Meetup / Songkick / Bandsintown (paid/partner), and any TripAdvisor scraping (ToS + anti-bot).
+Their signal, where it matters, still reaches you free through Paths A and B.</p>
+</div>
+
+<h2><span class="num">06</span>Sources &amp; findings</h2>
+<p class="small">Live checks, 2026-07-20 — API availability and terms change, so verdicts are dated.</p>
+<ol class="src">
+<li>TripAdvisor Content API — key + billing, 5 reviews/listing: <a href="https://developer-tripadvisor.com/content-api/">developer-tripadvisor.com/content-api</a>; scraping/automation prohibited: <a href="https://tripadvisor.mediaroom.com/us-terms-of-use">Terms of Use</a></li>
+<li>Eventbrite public search API shut down 2019–20, org-scoped only: <a href="https://github.com/Automattic/eventbrite-api/issues/83">Automattic/eventbrite-api #83</a>, <a href="https://www.eventbrite.com/platform/docs/changelog">platform changelog</a></li>
+<li>Meetup GraphQL-only + Pro required for OAuth consumer: <a href="https://help.meetup.com/hc/en-us/articles/41453576628749-How-can-I-get-access-to-Meetup-s-API">Meetup help</a>, <a href="https://www.meetup.com/graphql/authentication/">GraphQL auth</a></li>
+<li>Yelp Fusion — 3 review excerpts, delete-on-termination: <a href="https://terms.yelp.com/developers/api_terms/20250113_en_us/">API Terms (2025-01-13)</a>, <a href="https://docs.developer.yelp.com/docs/places-intro">Places intro</a></li>
+<li>Ticketmaster Discovery — free key, 5k/day, 230k+ events: <a href="https://developer.ticketmaster.com/products-and-docs/apis/getting-started/">Getting started</a>, <a href="https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/">Discovery API v2</a></li>
+<li>NPS API — free key, things-to-do/events/campgrounds: <a href="https://www.nps.gov/subjects/developer/get-started.htm">Get started</a>, <a href="https://www.nps.gov/subjects/developer/api-documentation.htm">API docs</a></li>
+<li>Recreation.gov RIDB — free key <em>required</em> (<code>/facilities</code> → HTTP 401 without one, verified live 2026-07-20; a docs summary had claimed "no key"): <a href="https://www.recreation.gov/use-our-data">Use our data</a>, <a href="https://ridb.recreation.gov/docs">RIDB docs</a></li>
+<li>Wikivoyage — CC BY-SA 4.0, MediaWiki API: <a href="https://en.wikivoyage.org/wiki/Wikivoyage:Copyleft">Copyleft</a>, <a href="https://www.mediawiki.org/wiki/API:Licensing">API licensing</a></li>
+<li>OpenStreetMap Overpass — keyless, usage policy, ODbL: <a href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a>, <a href="https://operations.osmfoundation.org/policies/api/">API usage policy</a></li>
+<li>Wikipedia GeoSearch (GeoData) — keyless nearby POIs: <a href="https://www.mediawiki.org/wiki/API:Geosearch">API:Geosearch</a></li>
+<li>Google Places — no caching/storage except place_id: <a href="https://developers.google.com/maps/documentation/places/web-service/policies">Policies</a>, <a href="https://developers.google.com/maps/documentation/places/web-service/usage-and-billing">Usage &amp; billing</a></li>
+<li>Foursquare Places — free tier shrinking to 500 Pro calls Jun 2026: <a href="https://docs.foursquare.com/developer/reference/upcoming-changes">Upcoming changes</a>, <a href="https://foursquare.com/pricing/">Pricing</a></li>
+<li>Songkick partnership/fee; Bandsintown artist program: <a href="https://www.songkick.com/developer">Songkick developer</a>, <a href="https://help.artists.bandsintown.com/en/articles/7053475-what-is-the-bandsintown-api">Bandsintown API</a></li>
+<li>Atlas Obscura — no official API, 3rd-party RSS/scrapers: <a href="https://rss.app/rss-feed/atlas-obscura-rss-feed">RSS.app feed</a>, <a href="https://github.com/bartholomej/atlas-obscura-api">unofficial API</a></li>
+<li>Pipeline grounding — keyless contract, lanes, raw saves: <a href="../src/orchestrator.py#L42-L58">orchestrator.py:42-58</a>, <a href="../src/recipes.py">recipes.py</a>, <a href="../src/agentdd.py#L171-L181">agentdd.py:171-181</a>, <a href="../README.md#L14-L20">README security model</a></li>
+</ol>
+
+<div class="foot">
+Strategy brief for the <span class="mono">last30daysDashboard_Claude</span> research loop · 2026-07-20 ·
+report only, no pipeline code changed. Recommendation: start with the keyless <code>things-to-do</code> lane
+(Phase 1), then the open-data trio + WebSearch skill (Phase 2). Paths: <span class="tag p-a">A</span> keyless
+social · <span class="tag p-ap">A+</span> keyless open API · <span class="tag p-b">B</span> WebSearch ·
+<span class="tag p-k">K</span> free-key opt-in · <span class="tag p-x">✗</span> avoid.
+</div>
+</body></html>

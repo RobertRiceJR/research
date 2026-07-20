@@ -108,9 +108,24 @@ def _bullets(md: str, points: dict | None = None) -> str:
     return "<ul>\n" + "\n".join(items) + "\n</ul>" if items else "<p>(no synthesis)</p>"
 
 
+# A brief's leading verdict line: '_<label>:_ **Word** - reason'. The label varies by
+# lane (Act or ignore / Worth it / Restaurant at home), so match the shape, not the words.
+_VERDICT_LINE_RE = re.compile(r"^_[^_]+:_\s*\*\*\S")
+
+
 def _verdict_line(md_line: str) -> str:
-    """Render the top '_Act or ignore:_ **Word** - reason' line as a colored chip."""
+    """Render the top '_<label>:_ **Word** - reason' verdict line as a colored chip.
+
+    Colors the first bold token (the verdict word) by its traffic-light meaning, so
+    every lane's verdict — Act/Watch/Ignore, Nails it/Close/Hard — reads at a glance.
+    """
     inner = _inline(md_line)
+
+    def _color(m: re.Match) -> str:
+        cls = _VERDICT_CLASS.get(m.group(1).split()[0].lower(), "v-watch")
+        return f'<strong class="{cls}">{m.group(1)}</strong>'
+
+    inner = re.sub(r"<strong>([^<]+)</strong>", _color, inner, count=1)
     return f'<div class="verdict">{inner}</div>'
 
 
@@ -136,7 +151,7 @@ def render_brief(tool: str, sections_md: str, sources: list[str],
         if in_footer:
             footer_md.append(ln)
             continue
-        if not verdict_html and stripped.lower().startswith("_act or ignore:"):
+        if not verdict_html and _VERDICT_LINE_RE.match(stripped):
             verdict_html = _verdict_line(stripped)
             continue
         section_lines.append(ln)

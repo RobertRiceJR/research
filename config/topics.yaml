@@ -1,9 +1,12 @@
 # Daily Research Loop topics.
-# Three streams aligned to the AI-QE executive briefing (June 2026):
+# Streams aligned to the AI-QE executive briefing (June 2026):
 #   ai             -> general stack awareness (3)
 #   framework_arch -> architecture directions: RAG / self-healing / agentic / LLM-wiki agent memory (4)
-#   prod_support   -> production-support agents, to benchmark the IGS prod-support skill (4)
-# 11 topics total. exec_kpis dropped (revisit when you want the metrics feed).
+#   prod_support   -> production-support agents, to benchmark the IGS prod-support skill (4, disabled)
+#   claude_cert    -> Claude architectural certification: credential news + the design it tests (3)
+#   claude_agents  -> Claude agent ecosystem: which agents/subagents exist + are worth adopting (3)
+#   anthropic      -> pinned Anthropic digest (1)
+# exec_kpis dropped (revisit when you want the metrics feed).
 # Schema: streams -> <name> -> { enabled: bool, label: str, topics: [str, ...] }
 
 streams:
@@ -25,13 +28,47 @@ streams:
       - "Karpathy LLM Wiki"
 
   prod_support:
-    enabled: true
+    enabled: false
     label: "Production support agents"
     topics:
       - "AI incident response agent"
       - "LLM root cause analysis production"
       - "AI bug triage automation"
       - "AIOps on-call SRE copilot"
+
+  # Study/track stream for the Claude architectural certification.
+  # Mixes the credential itself with the design topics the exam leans on, so the
+  # digest stays substantive in weeks with no cert news. Disable once passed.
+  claude_cert:
+    enabled: true
+    label: "Claude architectural certification"
+    topics:
+      - "Anthropic Claude certification exam"
+      - "Claude agent architecture best practices"
+      - "Anthropic context engineering"
+
+  # Discovery pulse for the Claude agent ecosystem. Surfaces which agents /
+  # subagents people are actually running (code review, security, etc.) so the
+  # watch list becomes the candidate feed for per-agent due-diligence briefs.
+  claude_agents:
+    enabled: true
+    label: "Claude agents ecosystem"
+    topics:
+      - "Claude Code subagents"
+      - "Claude agent SDK agents"
+      - "Claude Code agent marketplace plugins"
+
+  # Daily travel / things-to-do pulse. Surfaces trending places, experiences, and
+  # events worth doing; promising ones graduate to a full brief via
+  # `.\run todo "<place>"` (mirrors how claude_agents feeds agentdd). The location
+  # topics are yours to edit — swap in your home area / upcoming trips.
+  travel:
+    enabled: true
+    label: "Things to do / travel"
+    topics:
+      - "best US national parks to visit 2026"
+      - "underrated weekend trips USA"
+      - "things to do near me this weekend"
 
   # Pinned to the top of the dashboard as the "Anthropic digest".
   anthropic:

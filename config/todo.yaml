@@ -1,0 +1,49 @@
+# Things-to-do harvest targets for the `todo` lane (keyless Reddit/YouTube social
+# proof + keyless open-data enrichment).
+#
+# PLUG-AND-PLAY: add a `- name:` block below, then run `.\run todo "<name>"`
+# (or `.\run todo --all` to sweep every place here). Zero code changes needed.
+#
+# Fed by the `travel` discovery stream in topics.yaml: when the daily digest
+# surfaces a place/experience worth a full brief, add it here and run `todo`.
+#
+# Schema: a top-level `todo:` list. Each block:
+#   name:        (required) the place or activity to research, as you'd name it
+#   location:    city/state/region for disambiguation                   (optional)
+#   category:    free-text bucket (Outdoors / Landmark / Nightlife / ...) (optional)
+#   subreddits:  comma-separated subreddit hints, no r/ prefix           (optional)
+#   lat / lon:   coordinates to skip geocoding for the open-data quartet (optional)
+#
+# Hints are optional — they only sharpen keyless retrieval and open-data lookups;
+# the lane still works without them. They cannot unlock a non-keyless source.
+
+todo:
+  - name: "Great Sand Dunes National Park"
+    location: "Colorado"
+    category: "Outdoors"
+    subreddits: "Colorado, NationalPark, camping, hiking"
+
+  - name: "Chicago Riverwalk"
+    location: "Chicago, IL"
+    category: "Urban / stroll"
+    subreddits: "chicago, Chicagoland, travel"
+
+  - name: "Antelope Canyon"
+    location: "Page, AZ"
+    category: "Travel / tour"
+    subreddits: "arizona, travel, NationalPark"
+
+  - name: "French Quarter"
+    location: "New Orleans, LA"
+    category: "Nightlife / culture"
+    subreddits: "NewOrleans, travel, neworleans"
+
+  - name: "Pike Place Market"
+    location: "Seattle, WA"
+    category: "Everyday / food"
+    subreddits: "Seattle, SeattleWA, travel"
+
+  - name: "Rocky Mountain National Park"
+    location: "Colorado"
+    category: "Outdoors"
+    subreddits: "Colorado, RockyMountain, NationalPark, hiking"

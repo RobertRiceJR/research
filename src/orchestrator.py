@@ -625,6 +625,170 @@ def cmd_dd(args) -> int:
     return 0
 
 
+def cmd_agentdd(args) -> int:
+    """Agent due-diligence: research a Claude agent's what/when/define/cost story.
+
+    The agent-native sibling of cmd_dd. Writes a standalone 4-section HTML brief
+    per agent. --engine-only prints the raw keyless engine evidence instead.
+    """
+    import agentdd as add  # lazy import keeps deps off the common path
+
+    py, env = resolve_python(), engine_env()
+    sources = available_sources(py, env)
+    configured = {a["name"].lower(): a for a in add.load_agents()}
+
+    if getattr(args, "all", False):
+        agents = [a["name"] for a in add.load_agents()]
+        if not agents:
+            sys.exit("No agents in config/agents.yaml (add one, or pass a name).")
+    elif args.agent:
+        agents = [args.agent]
+    else:
+        sys.exit("Pass an agent name (e.g. agentdd \"code-reviewer subagent\") or --all.")
+
+    print(f"Agent due-diligence — keyless sources: {', '.join(sources)}")
+    today = _dt.date.today().isoformat()
+    raw_dir = RAW / today
+    for agent in agents:
+        print(f"  - researching: {agent}")
+        hints = configured.get(agent.lower(), {})
+        raw_md = add.research_agent(py, env, agent, sources, raw_dir, hints)
+        if getattr(args, "engine_only", False):
+            print(f"\n{'='*70}\nAGENT: {agent}  (raw keyless engine evidence)\n{'='*70}")
+            print(raw_md)
+            continue
+        print("    synthesizing 4-section brief...")
+        sections_md = add.synthesize_agentdd(agent, raw_md)
+        (raw_dir / f"{_slug(agent)}-agentdd-synthesis.md").write_text(sections_md, encoding="utf-8")
+        from render_digest import render_brief  # lazy import
+        BRIEFS.mkdir(parents=True, exist_ok=True)
+        out = BRIEFS / f"{_slug(agent)}-{today}.html"
+        out.write_text(
+            render_brief(agent, sections_md, sources,
+                         meta={"date": today}, points=points_index(raw_md)),
+            encoding="utf-8",
+        )
+        print(f"    brief written: {out}")
+    return 0
+
+
+def cmd_recipe(args) -> int:
+    """Recipe research: harvest home-cook social proof for a dish (restaurant-at-home).
+
+    The cooking sibling of cmd_agentdd. Writes a standalone 3-section HTML brief
+    per dish; --engine-only prints the raw keyless engine evidence instead. The
+    raw evidence is always saved under raw/<date>/ for building vault recipe notes.
+    """
+    import recipes as rec  # lazy import keeps deps off the common path
+
+    py, env = resolve_python(), engine_env()
+    sources = available_sources(py, env)
+    configured = {r["name"].lower(): r for r in rec.load_recipes()}
+
+    if getattr(args, "all", False):
+        dishes = [r["name"] for r in rec.load_recipes()]
+        if not dishes:
+            sys.exit("No recipes in config/recipes.yaml (add one, or pass a name).")
+    elif args.dish:
+        dishes = [args.dish]
+    else:
+        sys.exit("Pass a dish name (e.g. recipe \"Chicken Piccata\") or --all.")
+
+    print(f"Recipe research — keyless sources: {', '.join(sources)}")
+    today = _dt.date.today().isoformat()
+    raw_dir = RAW / today
+    for dish in dishes:
+        print(f"  - researching: {dish}")
+        hints = configured.get(dish.lower(), {})
+        raw_md = rec.research_recipe(py, env, dish, sources, raw_dir, hints)
+        if getattr(args, "engine_only", False):
+            print(f"\n{'='*70}\nDISH: {dish}  (raw keyless engine evidence)\n{'='*70}")
+            print(raw_md)
+            continue
+        print("    synthesizing 3-section brief...")
+        sections_md = rec.synthesize_recipe(dish, raw_md)
+        (raw_dir / f"{_slug(dish)}-recipe-synthesis.md").write_text(sections_md, encoding="utf-8")
+        from render_digest import render_brief  # lazy import
+        BRIEFS.mkdir(parents=True, exist_ok=True)
+        out = BRIEFS / f"{_slug(dish)}-{today}.html"
+        out.write_text(
+            render_brief(dish, sections_md, sources,
+                         meta={"date": today}, points=points_index(raw_md)),
+            encoding="utf-8",
+        )
+        print(f"    brief written: {out}")
+    return 0
+
+
+def cmd_todo(args) -> int:
+    """Things-to-do research: harvest what's worth doing at a place (top / hidden / skip).
+
+    The travel sibling of cmd_recipe. Writes a standalone 4-section HTML brief per
+    place, blending keyless social proof with optional keyless open-data notes
+    (Wikivoyage / Recreation.gov / OpenStreetMap / Wikipedia) and, if NPS_API_KEY is
+    set, an opt-in NPS section. --engine-only prints the raw keyless evidence instead;
+    --no-open-data limits it to social evidence.
+    """
+    import todo as td  # lazy import keeps deps off the common path
+
+    py, env = resolve_python(), engine_env()
+    sources = available_sources(py, env)
+    configured = {t["name"].lower(): t for t in td.load_todo()}
+
+    if getattr(args, "all", False):
+        places = [t["name"] for t in td.load_todo()]
+        if not places:
+            sys.exit("No places in config/todo.yaml (add one, or pass a name).")
+    elif args.place:
+        places = [args.place]
+    else:
+        sys.exit("Pass a place name (e.g. todo \"Great Sand Dunes National Park\") or --all.")
+
+    print(f"Things-to-do research — keyless sources: {', '.join(sources)}")
+    today = _dt.date.today().isoformat()
+    raw_dir = RAW / today
+    for place in places:
+        print(f"  - researching: {place}")
+        hints = configured.get(place.lower(), {})
+        raw_md = td.research_todo(py, env, place, sources, raw_dir, hints)
+        if getattr(args, "engine_only", False):
+            print(f"\n{'='*70}\nPLACE: {place}  (raw keyless engine evidence)\n{'='*70}")
+            print(raw_md)
+            continue
+        # Keyless open-data enrichment (Wikivoyage / RIDB / OSM / Wikipedia), best-effort.
+        web_md = ""
+        if not getattr(args, "no_open_data", False):
+            try:
+                import places_open
+                print("    fetching keyless open-data notes (Wikivoyage/Wikipedia/OSM)...")
+                web_md = places_open.open_data_notes(
+                    place, hints.get("location"), hints.get("lat"), hints.get("lon"))
+            except Exception as e:  # noqa: BLE001 — enrichment never blocks the brief
+                print(f"    (open-data enrichment skipped: {e})")
+        # Opt-in NPS enrichment: the only keyed source, isolated; no-op unless NPS_API_KEY set.
+        try:
+            import parks_keyed
+            nps = parks_keyed.nps_notes(place, hints.get("location"))
+            if nps:
+                print("    + NPS opt-in notes (NPS_API_KEY present)")
+                web_md = (web_md + "\n\n" + nps).strip() if web_md else nps
+        except Exception:  # noqa: BLE001
+            pass
+        print("    synthesizing 4-section brief...")
+        sections_md = td.synthesize_todo(place, raw_md, web_md)
+        (raw_dir / f"{_slug(place)}-todo-synthesis.md").write_text(sections_md, encoding="utf-8")
+        from render_digest import render_brief  # lazy import
+        BRIEFS.mkdir(parents=True, exist_ok=True)
+        out = BRIEFS / f"{_slug(place)}-{today}.html"
+        out.write_text(
+            render_brief(place, sections_md, sources,
+                         meta={"date": today}, points=points_index(raw_md)),
+            encoding="utf-8",
+        )
+        print(f"    brief written: {out}")
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Daily Research Loop orchestrator (keyless).")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -645,10 +809,28 @@ def main() -> int:
     d.add_argument("--all", action="store_true", help="Research every tool in config/tools.yaml.")
     d.add_argument("--engine-only", action="store_true",
                    help="Print raw keyless engine evidence (skip synthesis/brief).")
+    ad = sub.add_parser("agentdd", help="Agent due-diligence: what/when/define/cost brief for a Claude agent.")
+    ad.add_argument("agent", nargs="?", help='Agent to research (e.g. "code-reviewer subagent").')
+    ad.add_argument("--all", action="store_true", help="Research every agent in config/agents.yaml.")
+    ad.add_argument("--engine-only", action="store_true",
+                    help="Print raw keyless engine evidence (skip synthesis/brief).")
+    rc = sub.add_parser("recipe", help="Recipe research: restaurant-at-home social proof for a dish.")
+    rc.add_argument("dish", nargs="?", help='Dish to research (e.g. "Chicken Piccata").')
+    rc.add_argument("--all", action="store_true", help="Research every dish in config/recipes.yaml.")
+    rc.add_argument("--engine-only", action="store_true",
+                    help="Print raw keyless engine evidence (skip synthesis/brief).")
+    tp = sub.add_parser("todo", help="Things-to-do research: what to do / hidden gems / skip, for a place.")
+    tp.add_argument("place", nargs="?", help='Place or activity to research (e.g. "Great Sand Dunes National Park").')
+    tp.add_argument("--all", action="store_true", help="Research every place in config/todo.yaml.")
+    tp.add_argument("--engine-only", action="store_true",
+                    help="Print raw keyless engine evidence (skip synthesis/brief).")
+    tp.add_argument("--no-open-data", action="store_true",
+                    help="Skip the keyless open-data enrichment (social evidence only).")
     args = p.parse_args()
     return {
         "run": cmd_run, "validate": cmd_validate, "doctor": cmd_doctor,
         "kpi": cmd_kpi, "rerender": cmd_rerender, "judge": cmd_judge, "dd": cmd_dd,
+        "agentdd": cmd_agentdd, "recipe": cmd_recipe, "todo": cmd_todo,
     }[args.cmd](args)
 
 
