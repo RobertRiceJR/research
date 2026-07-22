@@ -139,6 +139,12 @@ def render_brief(tool: str, sections_md: str, sources: list[str],
     """
     meta = meta or {}
     date_str = meta.get("date", "")
+    # Lane-customizable chrome. Defaults preserve the original tool-dd output
+    # byte-for-byte, so the dd / agentdd / recipe / todo lanes are unaffected.
+    kind = meta.get("kind", "tool due-diligence")
+    emoji = meta.get("emoji", "🔎")
+    title = meta.get("title", f"Tool Due-Diligence - {tool}")
+    rerun = meta.get("rerun", f'python src/orchestrator.py dd "{tool}"')
     lines = sections_md.splitlines()
     verdict_html = ""
     footer_md: list[str] = []
@@ -185,20 +191,20 @@ def render_brief(tool: str, sections_md: str, sources: list[str],
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tool Due-Diligence - {html.escape(tool)}</title>
+<title>{html.escape(title)}</title>
 <style>{CSS}
 .verdict{{font-size:1.05rem;margin:.5rem 0 2rem;padding:.75rem 1rem;background:var(--bg-elev);
 border:1px solid var(--border);border-radius:10px}}
 .tree{{margin-top:2.5rem;padding:1rem;background:var(--bg-elev);border:1px solid var(--border);
 border-radius:10px;color:var(--fg-muted);font-family:ui-monospace,'Cascadia Code',Consolas,monospace;
 font-size:.8rem;white-space:pre-wrap;overflow-x:auto}}</style></head><body>
-<div class="badge">🔎 tool due-diligence · <span class="accent">{html.escape(tool)}</span></div>
+<div class="badge">{emoji} {html.escape(kind)} · <span class="accent">{html.escape(tool)}</span></div>
 <div class="meta">last 30 days · keyless sources: {html.escape(', '.join(sources))} · synthesized via Claude Code{(' · ' + html.escape(date_str)) if date_str else ''}</div>
 {verdict_html}
 {chr(10).join(body)}
 {footer_html}
-<div class="foot">Tool due-diligence brief over the last30days engine. Keyless sources only
-(Reddit, Hacker News, Polymarket, GitHub, YouTube). Re-run: <code>python src/orchestrator.py dd "{html.escape(tool)}"</code>.</div>
+<div class="foot">{html.escape(kind.capitalize())} brief over the last30days engine. Keyless sources only
+(Reddit, Hacker News, Polymarket, GitHub, YouTube). Re-run: <code>{html.escape(rerun, quote=False)}</code>.</div>
 </body></html>"""
 
 

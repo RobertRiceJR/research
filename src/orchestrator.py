@@ -672,6 +672,57 @@ def cmd_agentdd(args) -> int:
     return 0
 
 
+def cmd_scorecard(args) -> int:
+    """Scorecard research: turn a subjective "best <X>" into a weighted rubric + ranked shortlist.
+
+    The decision-support sibling of cmd_dd. Writes a standalone 4-section HTML brief per
+    subject (Scoring rubric · Graded shortlist · Close calls & tradeoffs · Adopt this).
+    --engine-only prints the raw keyless engine evidence instead.
+    """
+    import scorecard as sc  # lazy import keeps deps off the common path
+
+    py, env = resolve_python(), engine_env()
+    sources = available_sources(py, env)
+    configured = {c["name"].lower(): c for c in sc.load_scorecards()}
+
+    if getattr(args, "all", False):
+        subjects = [c["name"] for c in sc.load_scorecards()]
+        if not subjects:
+            sys.exit("No subjects in config/scorecards.yaml (add one, or pass a name).")
+    elif args.subject:
+        subjects = [args.subject]
+    else:
+        sys.exit('Pass a subject (e.g. scorecard "best vector database") or --all.')
+
+    print(f"Scorecard research — keyless sources: {', '.join(sources)}")
+    today = _dt.date.today().isoformat()
+    raw_dir = RAW / today
+    for subject in subjects:
+        print(f"  - researching: {subject}")
+        hints = configured.get(subject.lower(), {})
+        raw_md = sc.research_scorecard(py, env, subject, sources, raw_dir, hints)
+        if getattr(args, "engine_only", False):
+            print(f"\n{'='*70}\nSUBJECT: {subject}  (raw keyless engine evidence)\n{'='*70}")
+            print(raw_md)
+            continue
+        print("    synthesizing 4-section scorecard...")
+        sections_md = sc.synthesize_scorecard(subject, raw_md)
+        (raw_dir / f"{_slug(subject)}-scorecard-synthesis.md").write_text(sections_md, encoding="utf-8")
+        from render_digest import render_brief  # lazy import
+        BRIEFS.mkdir(parents=True, exist_ok=True)
+        out = BRIEFS / f"{_slug(subject)}-{today}.html"
+        out.write_text(
+            render_brief(subject, sections_md, sources,
+                         meta={"date": today, "kind": "scorecard", "emoji": "🧮",
+                               "title": f"Scorecard - {subject}",
+                               "rerun": f'python src/orchestrator.py scorecard "{subject}"'},
+                         points=points_index(raw_md)),
+            encoding="utf-8",
+        )
+        print(f"    brief written: {out}")
+    return 0
+
+
 def cmd_recipe(args) -> int:
     """Recipe research: harvest home-cook social proof for a dish (restaurant-at-home).
 
@@ -789,6 +840,23 @@ def cmd_todo(args) -> int:
     return 0
 
 
+def cmd_export_letsgo(args) -> int:
+    """Export researched todo places into the 'Let's Go!' activities.json contract.
+
+    Emits one record per config/todo.yaml place that already has a synthesis on
+    disk, to exports/lets-go/activities.json (override with --out). The 'Let's Go!'
+    importer (server/import.js) upserts it. No cross-repo coupling beyond this JSON.
+    """
+    import export_letsgo as ex  # lazy import keeps deps off the common path
+
+    out = Path(args.out) if getattr(args, "out", None) else None
+    out_path, records, skipped = ex.export_all(out)
+    print(f"Exported {len(records)} activity record(s) -> {out_path}")
+    if skipped:
+        print(f"  skipped (no synthesis yet — run `todo` first): {', '.join(skipped)}")
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Daily Research Loop orchestrator (keyless).")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -814,6 +882,11 @@ def main() -> int:
     ad.add_argument("--all", action="store_true", help="Research every agent in config/agents.yaml.")
     ad.add_argument("--engine-only", action="store_true",
                     help="Print raw keyless engine evidence (skip synthesis/brief).")
+    scp = sub.add_parser("scorecard", help="Scorecard research: weighted rubric + ranked shortlist for 'best <X>'.")
+    scp.add_argument("subject", nargs="?", help='Subject to grade (e.g. "best vector database for RAG").')
+    scp.add_argument("--all", action="store_true", help="Research every subject in config/scorecards.yaml.")
+    scp.add_argument("--engine-only", action="store_true",
+                     help="Print raw keyless engine evidence (skip synthesis/brief).")
     rc = sub.add_parser("recipe", help="Recipe research: restaurant-at-home social proof for a dish.")
     rc.add_argument("dish", nargs="?", help='Dish to research (e.g. "Chicken Piccata").')
     rc.add_argument("--all", action="store_true", help="Research every dish in config/recipes.yaml.")
@@ -826,11 +899,15 @@ def main() -> int:
                     help="Print raw keyless engine evidence (skip synthesis/brief).")
     tp.add_argument("--no-open-data", action="store_true",
                     help="Skip the keyless open-data enrichment (social evidence only).")
+    xl = sub.add_parser("export-letsgo",
+                        help="Export researched todo places to the Let's Go! activities.json contract.")
+    xl.add_argument("--out", help="Output path (default exports/lets-go/activities.json).")
     args = p.parse_args()
     return {
         "run": cmd_run, "validate": cmd_validate, "doctor": cmd_doctor,
         "kpi": cmd_kpi, "rerender": cmd_rerender, "judge": cmd_judge, "dd": cmd_dd,
         "agentdd": cmd_agentdd, "recipe": cmd_recipe, "todo": cmd_todo,
+        "scorecard": cmd_scorecard, "export-letsgo": cmd_export_letsgo,
     }[args.cmd](args)
 
 

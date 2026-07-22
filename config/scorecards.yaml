@@ -1,0 +1,24 @@
+# Scorecard targets for the `scorecard` lane — turn a subjective "return me the
+# best <X>" into a weighted rubric + a graded, ranked shortlist.
+#
+# PLUG-AND-PLAY: add a `- name:` block below, then run `.\run scorecard "<name>"`
+# (or `.\run scorecard --all` to sweep every subject here). Zero code changes needed.
+#
+# Schema: a top-level `scorecards:` list. Each block:
+#   name:          (required) the subject to grade, exactly as you'd name it
+#   criteria:      comma-separated candidate dimensions to seed the rubric  (optional)
+#   weights:       comma-separated weights, parallel to `criteria`          (optional)
+#   subreddits:    comma-separated subreddit hints, no r/ prefix            (optional)
+#   github_repos:  comma-separated owner/repo hints (candidates live here)  (optional)
+#
+# Hints are optional — leave them off and the planner infers targeting. `criteria`/
+# `weights` only SEED the rubric; synthesis grounds the final weights in the evidence
+# (and says so). They keep the same scale as this repo's own judge.py panel
+# (Relevance 0.30 / Faithfulness 0.40 / Actionability 0.30) — weights need not sum to 1.
+
+scorecards:
+  - name: "LLM & Claude evaluation scorecards"
+    criteria: "coverage of metrics, ease of setup, LLM-as-judge support, CI/CD fit, maturity & maintenance, cost & openness"
+    weights: "0.25, 0.15, 0.20, 0.15, 0.15, 0.10"
+    subreddits: "LocalLLaMA, MachineLearning, LangChain, LLMDevs"
+    github_repos: "promptfoo/promptfoo, confident-ai/deepeval, explodinggradients/ragas, UKGovernmentBEIS/inspect_ai, openai/evals"

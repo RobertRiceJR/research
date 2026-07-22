@@ -4,46 +4,58 @@
 # PLUG-AND-PLAY: add a `- name:` block below, then run `.\run todo "<name>"`
 # (or `.\run todo --all` to sweep every place here). Zero code changes needed.
 #
-# Fed by the `travel` discovery stream in topics.yaml: when the daily digest
-# surfaces a place/experience worth a full brief, add it here and run `todo`.
+# TUNED for the "Let's Go!" activity tracker: Chicago-area, family/kid-friendly
+# outings. Harvested places flow into that app via `.\run export-letsgo` ->
+# server/import.js. Keep `lat`/`lon` on each entry so the importer can compute a
+# drive-time bucket from home. Avoid names already in the app's seed list, so the
+# importer doesn't create look-alike duplicates (dedup is by harvest source_key).
 #
 # Schema: a top-level `todo:` list. Each block:
 #   name:        (required) the place or activity to research, as you'd name it
 #   location:    city/state/region for disambiguation                   (optional)
-#   category:    free-text bucket (Outdoors / Landmark / Nightlife / ...) (optional)
+#   category:    free-text bucket -> mapped to a Let's Go! category      (optional)
 #   subreddits:  comma-separated subreddit hints, no r/ prefix           (optional)
-#   lat / lon:   coordinates to skip geocoding for the open-data quartet (optional)
-#
-# Hints are optional — they only sharpen keyless retrieval and open-data lookups;
-# the lane still works without them. They cannot unlock a non-keyless source.
+#   lat / lon:   coordinates for open-data lookups + import drive-time   (optional)
 
 todo:
-  - name: "Great Sand Dunes National Park"
-    location: "Colorado"
-    category: "Outdoors"
-    subreddits: "Colorado, NationalPark, camping, hiking"
+  - name: "Brookfield Zoo"
+    location: "Brookfield, IL"
+    category: "Zoo / animals"
+    subreddits: "chicago, Chicagoland, Naperville"
+    lat: 41.8339
+    lon: -87.8353
 
-  - name: "Chicago Riverwalk"
-    location: "Chicago, IL"
-    category: "Urban / stroll"
-    subreddits: "chicago, Chicagoland, travel"
+  - name: "Cosley Zoo"
+    location: "Wheaton, IL"
+    category: "Zoo / animals"
+    subreddits: "chicago, wheaton, Chicagoland"
+    lat: 41.8661
+    lon: -88.1145
 
-  - name: "Antelope Canyon"
-    location: "Page, AZ"
-    category: "Travel / tour"
-    subreddits: "arizona, travel, NationalPark"
+  - name: "Cantigny Park"
+    location: "Wheaton, IL"
+    category: "Park / gardens / nature"
+    subreddits: "chicago, wheaton, Chicagoland"
+    lat: 41.8467
+    lon: -88.1533
 
-  - name: "French Quarter"
-    location: "New Orleans, LA"
-    category: "Nightlife / culture"
-    subreddits: "NewOrleans, travel, neworleans"
+  - name: "Naper Settlement"
+    location: "Naperville, IL"
+    category: "History / landmark"
+    subreddits: "Naperville, chicago, Chicagoland"
+    lat: 41.7719
+    lon: -88.1531
 
-  - name: "Pike Place Market"
-    location: "Seattle, WA"
-    category: "Everyday / food"
-    subreddits: "Seattle, SeattleWA, travel"
+  - name: "DuPage Children's Museum"
+    location: "Naperville, IL"
+    category: "Kids museum / indoor"
+    subreddits: "Naperville, chicago, Chicagoland"
+    lat: 41.7783
+    lon: -88.1470
 
-  - name: "Rocky Mountain National Park"
-    location: "Colorado"
-    category: "Outdoors"
-    subreddits: "Colorado, RockyMountain, NationalPark, hiking"
+  - name: "Fabyan Japanese Garden"
+    location: "Geneva, IL"
+    category: "Gardens / nature"
+    subreddits: "chicago, Chicagoland, Geneva"
+    lat: 41.8425
+    lon: -88.3179

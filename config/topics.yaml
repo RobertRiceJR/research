@@ -63,12 +63,12 @@ streams:
   # `.\run todo "<place>"` (mirrors how claude_agents feeds agentdd). The location
   # topics are yours to edit — swap in your home area / upcoming trips.
   travel:
-    enabled: true
+    enabled: false
     label: "Things to do / travel"
     topics:
-      - "best US national parks to visit 2026"
-      - "underrated weekend trips USA"
-      - "things to do near me this weekend"
+      - "family things to do Chicago suburbs with kids"
+      - "best Chicago area day trips with toddlers"
+      - "Naperville Chicagoland weekend activities families"
 
   # Pinned to the top of the dashboard as the "Anthropic digest".
   anthropic:

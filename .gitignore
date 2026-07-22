@@ -5,6 +5,9 @@
 # Raw engine output and logs (regenerated each run)
 raw/
 logs/
+
+# Generated export payloads (e.g. the Let's Go! activities.json contract)
+exports/
 __pycache__/
 *.pyc
 
@@ -17,3 +20,7 @@ briefs/*.html
 # KPI: keep the data (kpi.jsonl) as the cumulative source of truth; the
 # dashboard is regenerated from it.
 metrics/dashboard.html
+
+# Claude Code plan-mode files (organized into YYYY-MM/ subfolders by the
+# SessionStart hook). Personal planning notes, not part of the project.
+plans/

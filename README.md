@@ -25,6 +25,9 @@ dark-mode digest, grades it with a cheap 3-judge quality panel, and tracks execu
   Recreation.gov/RIDB was evaluated but needs a free key (HTTP 401 without one), so it is treated as a keyed
   opt-in, not keyless. `src/parks_keyed.py` is the **one wired opt-in keyed** source (NPS): it reads its own
   `NPS_API_KEY`, is a no-op when unset, and is likewise kept entirely away from the engine env.
+- **Keyed-source register** ([`docs/keyed-sources/`](docs/keyed-sources/)): a documentation-only catalog of
+  sources that *would* need a key — what each unlocks per config lane, cost/ToS, and the isolated pattern to
+  wire one (mirroring NPS). No keys live there; keyless stays the default. Consult it before adding any key.
 
 ## Layout
 
