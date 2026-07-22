@@ -1,7 +1,3 @@
-.\run doctor
-.\run run
-
-
 # last30days Dashboard (Claude) — self-contained keyless research loop
 
 A daily research loop that pulls what people are actually saying about your topics, synthesizes a
@@ -56,16 +52,31 @@ reports/            standing strategy briefs (tracked; e.g. things-to-do data-av
 digests/  briefs/  raw/  metrics/  (generated; gitignored except metrics/kpi.jsonl)
 ```
 
-## Prerequisites (machine-verified)
+## Prerequisites
 
 | Tool | Notes |
 | --- | --- |
-| Python 3.12+ | `C:\Users\terri\AppData\Local\Programs\Python\Python313\python.exe`. Engine is pure stdlib. |
+| Python 3.12+ | Engine is pure stdlib. `run.cmd` resolves it user-agnostically (see below). |
 | `gh` CLI (authed) | gates the GitHub source; the loop injects its dir onto the engine PATH. |
 | `yt-dlp` | keyless YouTube source (binary on PATH; the loop adds the Python Scripts dir). |
 | `claude` CLI | headless query-planning, synthesis, and the Haiku judges. |
 
-Run `python src\orchestrator.py doctor` to confirm.
+Run `.\run doctor` to confirm all four resolve.
+
+### Running in a fresh environment
+
+The launchers are **user-agnostic** — there are no hardcoded usernames. `run.cmd` resolves Python
+in this order: the current user's per-user install
+(`%LOCALAPPDATA%\Programs\Python\Python313\python.exe`) → `py -3.13` → `py -3.12` → bare `python`.
+`scripts\run-daily.ps1` derives the same from `$env:LOCALAPPDATA`. To set up a new machine:
+
+1. **Python 3.13** — install it; the `py` launcher (bundled with the Windows installer) is the
+   reliable fallback. The engine *rejects* anything below 3.12 (e.g. a default Anaconda 3.10).
+2. **`gh auth login`** — authenticates the GitHub source (otherwise it's silently skipped).
+3. **`yt-dlp`** on PATH (e.g. `pip install yt-dlp`) — gates the YouTube source.
+4. **`claude` CLI** on PATH — required for synthesis and the judges.
+
+No `.env` or API keys: every source is keyless, and `gh` / `claude` carry their own auth.
 
 ## Commands
 

@@ -80,10 +80,11 @@ def dd_plan(tool: str, sources: list[str], raw_dir: Path) -> Path:
         "subqueries": [
             {
                 "label": "integration",
-                "search_query": f"{tool} MCP server skill SDK integration",
+                "search_query": f"{tool} official MCP server skill plugin extension SDK marketplace integration",
                 "ranking_query": (
                     f"What drop-in skills, MCP servers, SDKs, or CLIs exist to integrate "
-                    f"{tool} with AI coding agents, and how are they wired up?"
+                    f"{tool} with AI coding agents — official vs third-party, and how mature "
+                    f"are they (GA, beta, experimental)?"
                 ),
                 "sources": gh_first,
                 "weight": 1.0,
@@ -135,26 +136,36 @@ def research_tool(py: str, env: dict, tool: str, sources: list[str],
 # --------------------------------------------------------------------------
 # 4-section synthesis
 # --------------------------------------------------------------------------
-_DD_SECTIONS = ("Integration map", "Gotchas + environments",
+_DD_SECTIONS = ("Availability scorecard", "Integration map", "Gotchas + environments",
                 "Historical record", "References + sentiment")
 
 _DD_SYNTH_INSTRUCTION = (
     "You are writing a TOOL DUE-DILIGENCE brief from 30-day research evidence (Reddit, Hacker "
-    "News, GitHub, YouTube) and optional doc-grounded web notes. Decide whether a team should "
-    "adopt the tool's agent integration. Output GitHub-flavored markdown with EXACTLY this shape "
-    "and nothing else:\n"
+    "News, GitHub, YouTube) and optional doc-grounded web notes. The core question is "
+    "SKILL-AS-A-SERVICE AVAILABILITY: is there a drop-in skill / MCP server / SDK / CLI to wire "
+    "this tool into an AI coding agent, and how mature is it? Decide whether a team should adopt "
+    "it. Output GitHub-flavored markdown with EXACTLY this shape and nothing else:\n"
     "First line: '_Act or ignore:_ **<Act|Watch|Ignore>** - <3-8 word reason>'.\n"
-    "Then four sections, each a '## ' header in this exact order: "
-    "'## Integration map', '## Gotchas + environments', '## Historical record', "
-    "'## References + sentiment'. Under each header, 2-5 markdown bullets. Each bullet: "
-    "'- **<lead-in>** - <detail> [<source>](<url>)'. Every bullet that makes a factual claim "
-    "MUST end with at least one inline markdown link copied VERBATIM from a URL in the evidence; "
-    "never invent a URL. Integration map = skills/MCP/SDKs/CLIs + how to wire them. "
-    "Gotchas + environments = limitations + per-environment prerequisites. Historical record = "
-    "maturity, changelog/version trajectory, onboarding/issue status. References + sentiment = "
-    "cited sources + what the community says. THIN-EVIDENCE RULE: if a section has no grounding "
-    "in the evidence, write one bullet stating that plainly (e.g. '- No official MCP server found "
-    "in the engine evidence; run the skill path for doc-grounded discovery.') rather than inventing."
+    "Then FIVE sections, each a '## ' header in this exact order: "
+    "'## Availability scorecard', '## Integration map', '## Gotchas + environments', "
+    "'## Historical record', '## References + sentiment'.\n"
+    "AVAILABILITY SCORECARD comes FIRST — the at-a-glance answer. Emit EXACTLY these five "
+    "bullets, in this order, each as '- **<field>** - <value> [<source>](<url>)':\n"
+    "  - **Official skill** - Yes/No/Unknown (+ name) — a vendor-published agent/Claude Code skill\n"
+    "  - **MCP server** - Yes/No/Unknown (+ official vs third-party, + repo)\n"
+    "  - **SDK / CLI** - Yes/No/Unknown (+ language/package)\n"
+    "  - **Install path** - the one-line way you'd actually wire it into an agent\n"
+    "  - **Maturity** - exactly one of: GA / Beta / Experimental / Community-only / None\n"
+    "For the other four sections, 2-5 markdown bullets each, '- **<lead-in>** - <detail> "
+    "[<source>](<url>)'. Every bullet that makes a factual claim MUST end with at least one inline "
+    "markdown link copied VERBATIM from a URL in the evidence; never invent a URL. Integration map "
+    "= skills/MCP/SDKs/CLIs + how to wire them. Gotchas + environments = limitations + "
+    "per-environment prerequisites. Historical record = maturity, changelog/version trajectory, "
+    "onboarding/issue status. References + sentiment = cited sources + what the community says. "
+    "THIN-EVIDENCE RULE: if a field or section has no grounding in the evidence, say so plainly "
+    "(e.g. '- **MCP server** - Unknown: not found in the engine evidence; run the skill path for "
+    "doc-grounded discovery.') rather than inventing — a scorecard field with no evidence is "
+    "'Unknown', never a guessed Yes/No."
 )
 
 

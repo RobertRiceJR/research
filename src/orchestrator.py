@@ -35,7 +35,12 @@ from pathlib import Path
 # (a pruned fork of mvanhorn/last30days-skill — see engine/VENDORED.md).
 ENGINE_SCRIPT = Path(__file__).resolve().parent.parent / "engine" / "last30days.py"
 GH_DIR = r"C:\Program Files\GitHub CLI"
-PY313 = Path(r"C:\Users\terri\AppData\Local\Programs\Python\Python313\python.exe")
+# Per-user Python 3.13 path, derived from the CURRENT user's LOCALAPPDATA so it
+# resolves on any machine/profile (not a baked-in username). Only a secondary
+# fallback: when run.cmd launches this with a 3.12+ interpreter, resolve_python()
+# returns sys.executable and this path is never consulted.
+_LOCALAPPDATA = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+PY313 = _LOCALAPPDATA / "Programs" / "Python" / "Python313" / "python.exe"
 
 # The keyless allowlist. This tuple is the security contract.
 # youtube is keyless too — yt-dlp public search needs no API key and no cookies.
@@ -610,7 +615,7 @@ def cmd_dd(args) -> int:
             print(f"\n{'='*70}\nTOOL: {tool}  (raw keyless engine evidence)\n{'='*70}")
             print(raw_md)
             continue
-        print("    synthesizing 4-section brief...")
+        print("    synthesizing brief (availability scorecard + 4 sections)...")
         sections_md = dd.synthesize_dd(tool, raw_md)
         (raw_dir / f"{_slug(tool)}-dd-synthesis.md").write_text(sections_md, encoding="utf-8")
         from render_digest import render_brief  # lazy import

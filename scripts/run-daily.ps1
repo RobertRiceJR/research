@@ -11,11 +11,13 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $orchestrator = Join-Path $root "src\orchestrator.py"
 
-# --- Resolve Python 3.12+ (baked path first, then discovery) ---------------
+# --- Resolve Python 3.12+ (current user's per-user path first, then discovery) ---
+# Derived from $env:LOCALAPPDATA so it is user-agnostic (no baked-in username).
 $py = $null
+$localAppData = if ($env:LOCALAPPDATA) { $env:LOCALAPPDATA } else { Join-Path $env:USERPROFILE "AppData\Local" }
 $candidates = @(
-  "C:\Users\terri\AppData\Local\Programs\Python\Python313\python.exe",
-  "C:\Users\terri\AppData\Local\Programs\Python\Python312\python.exe"
+  (Join-Path $localAppData "Programs\Python\Python313\python.exe"),
+  (Join-Path $localAppData "Programs\Python\Python312\python.exe")
 )
 foreach ($c in $candidates) { if (Test-Path $c) { $py = $c; break } }
 if (-not $py) {

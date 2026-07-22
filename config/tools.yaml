@@ -16,3 +16,7 @@ tools:
     aliases: "App Insights, Azure Monitor APM"
     subreddits: "Azure, devops, dotnet, sre"
     github_repos: "microsoft/azure-skills, Azure/azure-mcp"
+  - name: "Playwright"
+    aliases: "Playwright Test, @playwright/test, Playwright MCP"
+    subreddits: "Playwright, QualityAssurance, softwaretesting, webdev"
+    github_repos: "microsoft/playwright, microsoft/playwright-mcp, executeautomation/mcp-playwright"
